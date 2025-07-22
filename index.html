@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de Videos de YouTube</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Resumen de Videos de YouTube</h1>
+        <div class="input-container">
+            <input type="text" id="video-url" placeholder="Pega la URL del video de YouTube">
+            <button id="submit-btn">Procesar</button>
+        </div>
+        <div id="loader" class="loader" style="display: none;"></div>
+        <div id="status-box" class="status-box"></div>
+        <div id="results-container" class="results-container" style="display: none;">
+            <div class="result-box" id="summary-box">
+                <!-- El resumen se insertará aquí -->
+            </div>
+            <div class="result-box" id="english-box">
+                <!-- La traducción al inglés se insertará aquí -->
+            </div>
+            <div class="result-box" id="spanish-box">
+                <!-- La traducción al español se insertará aquí -->
+            </div>
+            <div class="result-box" id="chapters-box">
+                <!-- Los capítulos se insertarán aquí -->
+            </div>
+        </div>
+    </div>
+    <script type="module" src="scripts/app.js"></script>
+</body>
+</html>
