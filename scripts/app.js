@@ -2,23 +2,23 @@ import { videoUrlInput, submitBtn } from './utils/domElements.js';
 import { showLoader, hideLoader, showResults, showError, updateStatusMessage } from './utils/display.js';
 import { startVideoProcess, checkTranscriptionResults } from './services/videoProcessor.js';
 
-const pollTranscriptionResults = (fileName) => {
+const pollTranscriptionResults = (fileName, videoUrl) => {
   const interval = setInterval(async () => {
     try {
       const statusResult = await checkTranscriptionResults(fileName);
-      updateStatusMessage(`Estado: ${statusResult.status}`);
-
-      if (statusResult.status === 'COMPLETED') {
+      
+      if (statusResult.status === 'PENDING') {
+        showLoader();
+        updateStatusMessage('El video se está procesando...');
+      } else if (statusResult.status === 'COMPLETED') {
         clearInterval(interval);
-        showResults(statusResult.results);
+        showResults(statusResult.results, videoUrl);
         hideLoader();
       } else if (statusResult.status === 'FAILED') {
         clearInterval(interval);
         showError(`La transcripción falló: ${statusResult.message}`);
         hideLoader();
       }
-      // Si está en progreso, no hacemos nada y el polling continúa
-
     } catch (error) {
       clearInterval(interval);
       console.error('Error durante el sondeo:', error);
@@ -41,7 +41,7 @@ submitBtn.addEventListener('click', async () => {
   try {
     const fileName = await startVideoProcess(videoUrl);
     updateStatusMessage('Video subido. Esperando transcripción...');
-    pollTranscriptionResults(fileName);
+    pollTranscriptionResults(fileName, videoUrl);
   } catch (error) {
     console.error('Error al procesar el video:', error);
     showError(error.message || 'Ocurrió un error al procesar el video. Por favor, inténtalo de nuevo.');

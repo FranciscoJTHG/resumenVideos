@@ -53,7 +53,7 @@ const getTranscriptionResults = async (req, res) => {
     // Intentar obtener la transcripción en inglés
     try {
       englishTranscript = await getLatestTextFileInFolder('outputs/', 'resumen-en', '.txt');
-      console.log('Contenido de englishTranscript:', englishTranscript);
+      // console.log('Contenido de englishTranscript:', englishTranscript); // Comentado para reducir logs
     } catch (error) {
       if (error.name === 'NoSuchKey') allCompleted = false;
       else throw error;
@@ -62,7 +62,7 @@ const getTranscriptionResults = async (req, res) => {
     // Intentar obtener la transcripción en español
     try {
       spanishTranscript = await getLatestTextFileInFolder('outputs/', 'resumen-es', '.txt');
-      console.log('Contenido de spanishTranscript:', spanishTranscript);
+      // console.log('Contenido de spanishTranscript:', spanishTranscript); // Comentado para reducir logs
     } catch (error) {
       if (error.name === 'NoSuchKey') allCompleted = false;
       else throw error;

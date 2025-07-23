@@ -153,48 +153,53 @@ const getLatestJsonInFolder = async (folderPath, suffix = '.json') => {
 };
 
 const getLatestTextFileInFolder = async (folderPath, filePrefix, suffix = '.txt') => {
+  // console.log(`[getLatestTextFileInFolder] Buscando en folderPath: ${folderPath}, filePrefix: ${filePrefix}, suffix: ${suffix}`); // Comentado para reducir logs
   const bucketName = process.env.S3_TRANSCRIPTS_BUCKET_NAME || process.env.S3_BUCKET_NAME;
   const listParams = {
     Bucket: bucketName,
     Prefix: folderPath,
   };
 
-  try {
-    const command = new ListObjectsV2Command(listParams);
-    const { Contents } = await s3Client.send(command);
+  // console.log(`[getLatestTextFileInFolder] ListObjectsV2Command Prefix: ${listParams.Prefix}`); // Comentado para reducir logs
+  const command = new ListObjectsV2Command(listParams);
+  const { Contents } = await s3Client.send(command);
 
-    if (!Contents || Contents.length === 0) {
-      const noSuchKeyError = new Error('NoSuchKey');
-      noSuchKeyError.name = 'NoSuchKey';
-      throw noSuchKeyError;
-    }
-
-    const textFiles = Contents.filter(item => 
-      item.Key.startsWith(`${folderPath}${filePrefix}`)
-      && item.Key.endsWith(suffix)
-    );
-
-    if (textFiles.length === 0) {
-      const noSuchKeyError = new Error('NoSuchKey');
-      noSuchKeyError.name = 'NoSuchKey';
-      throw noSuchKeyError;
-    }
-
-    // Ordenar por fecha de última modificación (más reciente primero)
-    textFiles.sort((a, b) => b.LastModified.getTime() - a.LastModified.getTime());
-
-    const latestFileKey = textFiles[0].Key;
-    console.log(`Latest text file in ${folderPath} with prefix ${filePrefix} and suffix ${suffix}: ${latestFileKey}`);
-
-    return await getTextFromS3(latestFileKey);
-
-  } catch (error) {
-    if (error.name === 'NoSuchKey') {
-      throw error;
-    }
-    console.error(`Error al listar o obtener el archivo de texto más reciente en ${folderPath}:`, error);
-    throw error;
+  if (!Contents || Contents.length === 0) {
+    // console.log(`[getLatestTextFileInFolder] No se encontraron contenidos en ${folderPath}`); // Comentado para reducir logs
+    const noSuchKeyError = new Error('NoSuchKey');
+    noSuchKeyError.name = 'NoSuchKey';
+    throw noSuchKeyError;
   }
+
+  // console.log(`[getLatestTextFileInFolder] Contenidos encontrados (total): ${Contents.length}`); // Comentado para reducir logs
+  // console.log(`[getLatestTextFileInFolder] Archivos encontrados en ${folderPath}:`, Contents.map(item => item.Key)); // Comentado para reducir logs
+  const textFiles = Contents.filter(item => 
+    item.Key.includes(filePrefix)
+    && item.Key.endsWith(suffix)
+  );
+
+  // console.log(`[getLatestTextFileInFolder] Archivos de texto filtrados por filePrefix (${filePrefix}) y suffix (${suffix}): ${textFiles.length}`); // Comentado para reducir logs
+
+  if (textFiles.length === 0) {
+    // console.log(`[getLatestTextFileInFolder] No se encontraron archivos de texto después de filtrar.`); // Comentado para reducir logs
+    const noSuchKeyError = new Error('NoSuchKey');
+    noSuchKeyError.name = 'NoSuchKey';
+    throw noSuchKeyError;
+  }
+
+  // Ordenar por el timestamp en el nombre del archivo
+  textFiles.sort((a, b) => {
+    const timestampA = a.Key.match(/(\d{8}T\d{6}Z)/);
+    const timestampB = b.Key.match(/(\d{8}T\d{6}Z)/);
+    if (timestampA && timestampB) {
+      return timestampB[1].localeCompare(timestampA[1]);
+    }
+    return 0;
+  });
+
+  const latestFileKey = textFiles[0].Key;
+  // console.log(`[getLatestTextFileInFolder] Latest text file in ${folderPath} with filePrefix ${filePrefix} and suffix ${suffix}: ${latestFileKey}`); // Comentado para reducir logs
+  return await getTextFromS3(latestFileKey);
 };
 
 module.exports = { uploadVideoToS3, getTranscriptFromS3, getLatestJsonInFolder, getTextFromS3, getLatestTextFileInFolder, getRawJsonFromS3 };
