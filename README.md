@@ -5,10 +5,10 @@ Este proyecto es una aplicación web que permite procesar la URL de un video de 
 ## Características
 
 ### Frontend
-- **Interfaz de Usuario:** Una página web simple con un campo de entrada para la URL del video y un botón "Procesar".
+- **Interfaz de Usuario:** Una página web con un campo de entrada para la URL del video y un botón "Subir".
+- **Diseño:** Se agregó un degradado de fondo basado en las paletas de colores de AWS.
 - **Arquitectura Modular:** Frontend estructurado en módulos (utils, services) para una mejor organización y mantenibilidad.
 - **Resultados:** Muestra cuatro cuadros de resultados: "Resumen", "English", "Español" y "Capítulos".
-- **Diseño:** Los cuadros de resultados se muestran horizontalmente usando Flexbox.
 - **Interactividad:** Los cuadros de resultados están ocultos por defecto y se muestran solo después de que el procesamiento se completa.
 - **Polling de Resultados:** El frontend sondea periódicamente al backend para obtener el estado y los resultados de la transcripción.
 - **Loader y Estado:** Un indicador de "Cargando..." o "Procesando..." y mensajes de estado detallados aparecen mientras se espera la respuesta del backend y la transcripción de AWS.
