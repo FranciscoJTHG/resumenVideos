@@ -1,3 +1,4 @@
+const { Readable } = require('stream');
 const { downloadYoutubeVideo } = require('../services/youtubeService');
 const { uploadVideoToS3, getLatestJsonInFolder, getLatestTextFileInFolder } = require('../services/s3Service');
 
@@ -18,6 +19,25 @@ const processVideo = async (req, res) => {
   } catch (error) {
     console.error('Error al procesar el video:', error);
     res.status(500).json({ message: 'Error interno del servidor al procesar el video', error: error.message });
+  }
+};
+
+const handleVideoUpload = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No se subió ningún archivo.' });
+  }
+
+  try {
+    const fileName = `${Date.now()}-${req.file.originalname}`;
+    const videoStream = Readable.from(req.file.buffer);
+
+    const s3Uri = await uploadVideoToS3(fileName, videoStream, req.file.mimetype);
+    console.log(`Video subido a S3: ${s3Uri}`);
+
+    res.status(202).json({ fileName: fileName });
+  } catch (error) {
+    console.error('Error al procesar el video subido:', error);
+    res.status(500).json({ message: 'Error interno del servidor al procesar el video subido', error: error.message });
   }
 };
 
@@ -53,7 +73,6 @@ const getTranscriptionResults = async (req, res) => {
     // Intentar obtener la transcripción en inglés
     try {
       englishTranscript = await getLatestTextFileInFolder('outputs/', 'resumen-en', '.txt');
-      // console.log('Contenido de englishTranscript:', englishTranscript); // Comentado para reducir logs
     } catch (error) {
       if (error.name === 'NoSuchKey') allCompleted = false;
       else throw error;
@@ -62,7 +81,6 @@ const getTranscriptionResults = async (req, res) => {
     // Intentar obtener la transcripción en español
     try {
       spanishTranscript = await getLatestTextFileInFolder('outputs/', 'resumen-es', '.txt');
-      // console.log('Contenido de spanishTranscript:', spanishTranscript); // Comentado para reducir logs
     } catch (error) {
       if (error.name === 'NoSuchKey') allCompleted = false;
       else throw error;
@@ -89,4 +107,4 @@ const getTranscriptionResults = async (req, res) => {
   }
 };
 
-module.exports = { processVideo, getTranscriptionResults };
+module.exports = { processVideo, getTranscriptionResults, handleVideoUpload };

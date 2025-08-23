@@ -18,6 +18,24 @@ export const startVideoProcess = async (url) => {
   return data.fileName; // Devuelve el nombre del archivo
 };
 
+export const uploadVideoFile = async (file) => {
+  const formData = new FormData();
+  formData.append('video', file);
+
+  const response = await fetch(`${backendUrl}/upload-video`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Error al subir el archivo de video');
+  }
+
+  const data = await response.json();
+  return data.fileName;
+};
+
 export const checkTranscriptionResults = async (fileName) => {
   const response = await fetch(`${backendUrl}/results/${fileName}`);
   

@@ -153,35 +153,27 @@ const getLatestJsonInFolder = async (folderPath, suffix = '.json') => {
 };
 
 const getLatestTextFileInFolder = async (folderPath, filePrefix, suffix = '.txt') => {
-  // console.log(`[getLatestTextFileInFolder] Buscando en folderPath: ${folderPath}, filePrefix: ${filePrefix}, suffix: ${suffix}`); // Comentado para reducir logs
   const bucketName = process.env.S3_TRANSCRIPTS_BUCKET_NAME || process.env.S3_BUCKET_NAME;
   const listParams = {
     Bucket: bucketName,
     Prefix: folderPath,
   };
 
-  // console.log(`[getLatestTextFileInFolder] ListObjectsV2Command Prefix: ${listParams.Prefix}`); // Comentado para reducir logs
   const command = new ListObjectsV2Command(listParams);
   const { Contents } = await s3Client.send(command);
 
   if (!Contents || Contents.length === 0) {
-    // console.log(`[getLatestTextFileInFolder] No se encontraron contenidos en ${folderPath}`); // Comentado para reducir logs
     const noSuchKeyError = new Error('NoSuchKey');
     noSuchKeyError.name = 'NoSuchKey';
     throw noSuchKeyError;
   }
 
-  // console.log(`[getLatestTextFileInFolder] Contenidos encontrados (total): ${Contents.length}`); // Comentado para reducir logs
-  // console.log(`[getLatestTextFileInFolder] Archivos encontrados en ${folderPath}:`, Contents.map(item => item.Key)); // Comentado para reducir logs
   const textFiles = Contents.filter(item => 
     item.Key.includes(filePrefix)
     && item.Key.endsWith(suffix)
   );
 
-  // console.log(`[getLatestTextFileInFolder] Archivos de texto filtrados por filePrefix (${filePrefix}) y suffix (${suffix}): ${textFiles.length}`); // Comentado para reducir logs
-
   if (textFiles.length === 0) {
-    // console.log(`[getLatestTextFileInFolder] No se encontraron archivos de texto después de filtrar.`); // Comentado para reducir logs
     const noSuchKeyError = new Error('NoSuchKey');
     noSuchKeyError.name = 'NoSuchKey';
     throw noSuchKeyError;
@@ -198,7 +190,6 @@ const getLatestTextFileInFolder = async (folderPath, filePrefix, suffix = '.txt'
   });
 
   const latestFileKey = textFiles[0].Key;
-  // console.log(`[getLatestTextFileInFolder] Latest text file in ${folderPath} with filePrefix ${filePrefix} and suffix ${suffix}: ${latestFileKey}`); // Comentado para reducir logs
   return await getTextFromS3(latestFileKey);
 };
 

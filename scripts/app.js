@@ -1,6 +1,6 @@
-import { videoUrlInput, submitBtn } from './utils/domElements.js';
+import { videoUrlInput, videoFileInput, submitBtn } from './utils/domElements.js';
 import { showLoader, hideLoader, showResults, showError, updateStatusMessage } from './utils/display.js';
-import { startVideoProcess, checkTranscriptionResults } from './services/videoProcessor.js';
+import { startVideoProcess, uploadVideoFile, checkTranscriptionResults } from './services/videoProcessor.js';
 
 const pollTranscriptionResults = (fileName, videoUrl) => {
   const interval = setInterval(async () => {
@@ -30,18 +30,28 @@ const pollTranscriptionResults = (fileName, videoUrl) => {
 
 submitBtn.addEventListener('click', async () => {
   const videoUrl = videoUrlInput.value;
+  const videoFile = videoFileInput.files[0];
 
-  if (!videoUrl) {
-    showError('Por favor ingresa una URL válida');
+  if (!videoUrl && !videoFile) {
+    showError('Por favor, ingresa una URL o selecciona un archivo MP4.');
     return;
   }
 
   showLoader();
 
   try {
-    const fileName = await startVideoProcess(videoUrl);
+    let fileName;
+    let source = videoUrl;
+
+    if (videoFile) {
+      fileName = await uploadVideoFile(videoFile);
+      source = videoFile.name;
+    } else {
+      fileName = await startVideoProcess(videoUrl);
+    }
+
     updateStatusMessage('Video subido. Esperando transcripción...');
-    pollTranscriptionResults(fileName, videoUrl);
+    pollTranscriptionResults(fileName, source);
   } catch (error) {
     console.error('Error al procesar el video:', error);
     showError(error.message || 'Ocurrió un error al procesar el video. Por favor, inténtalo de nuevo.');
